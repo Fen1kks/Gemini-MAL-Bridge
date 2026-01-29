@@ -45,7 +45,7 @@ The project consists of three main layers:
 
 Since this extension is not yet on the Chrome Web Store, you can install it manually:
 
-1. **Download:** Go to the [Releases page](https://github.com/Fen1kks/Gemini-MAL-Bridge/releases) and download the file named `Gemini-MAL-Bridge-v1.0.zip`.
+1. **Download:** Go to the [Releases page](https://github.com/Fen1kks/Gemini-MAL-Bridge/releases) and download the file named `Gemini-MAL-Bridge-v1.0.0.zip`.
 2. **Unzip:** Extract the downloaded file to a folder on your computer.
 3. **Open Chrome Extensions:** Type `chrome://extensions` in your address bar and press Enter.
 4. **Enable Developer Mode:** Toggle the switch in the top right corner.
