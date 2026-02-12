@@ -2,7 +2,7 @@
 
 # Gemini-MAL Bridge: Client-Side Context Injection
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![Tech](https://img.shields.io/badge/tech-JavaScript%20%7C%20ManifestV3-yellow)
 ![Security](https://img.shields.io/badge/security-DOM%20%26%20React%20Safe-green)
 ![Architecture](https://img.shields.io/badge/architecture-Client--Side%20RAG-purple)
