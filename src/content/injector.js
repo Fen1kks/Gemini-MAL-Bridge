@@ -4,6 +4,7 @@ let contextInjected = false;
 let bridgeConfig = {
     mal_username: null,
     target_url: null,
+    target_chat_ui_color: null,
     anime_list_watching: null,
     last_shadow_hash: null,
     anime_list_history: null,
@@ -22,8 +23,118 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 function updateConfig() {
     chrome.storage.local.get(null, (result) => {
         bridgeConfig = { ...bridgeConfig, ...result, ready: true };
+        applyUIHighlight();
     });
 }
+
+const HIGHLIGHT_STYLE_ID = 'gemini-mal-bridge-highlight';
+
+function applyUIHighlight() {
+    const existingStyle = document.getElementById(HIGHLIGHT_STYLE_ID);
+    if (existingStyle) existingStyle.remove();
+
+    const color = bridgeConfig.target_chat_ui_color;
+    const targetUrl = bridgeConfig.target_url;
+
+    if (!color || !targetUrl) return;
+
+    const current = window.location.href.toLowerCase();
+    const target = targetUrl.toLowerCase().replace(/\/$/, '');
+    if (!current.startsWith(target)) return;
+
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    const chatIdMatch = targetUrl.match(/\/app\/([a-f0-9]+)/i);
+    const chatId = chatIdMatch ? chatIdMatch[1] : null;
+
+    const style = document.createElement('style');
+    style.id = HIGHLIGHT_STYLE_ID;
+    style.textContent = `
+        /* Gemini-MAL Bridge: Active Channel Indicator */
+
+        /* Gemini logo text - color */
+        .bard-logo-container,
+        .bard-logo-container * {
+            color: ${color} !important;
+            transition: color 0.3s !important;
+        }
+
+        /* Only the target conversation in sidebar - text color */
+        ${chatId ? `
+        a.conversation[href*="${chatId}"],
+        a.conversation[href*="${chatId}"] * {
+            color: ${color} !important;
+            transition: color 0.3s !important;
+        }
+        ` : ''}
+
+        /* Input area placeholder & text - color */
+        .input-area-container .ql-editor,
+        .input-area-container .ql-editor.ql-blank::before {
+            color: ${color} !important;
+            transition: color 0.3s !important;
+        }
+
+        /* Tools button text - color */
+        .toolbox-drawer-button,
+        .toolbox-drawer-button * {
+            color: ${color} !important;
+            transition: color 0.3s !important;
+        }
+
+        /* Trailing actions (Pro/Mic) - color */
+        .trailing-actions-wrapper,
+        .trailing-actions-wrapper * {
+            color: ${color} !important;
+            transition: color 0.3s !important;
+        }
+
+        /* Upload/Add (+) button - color */
+        .upload-card-button,
+        .upload-card-button * {
+            color: ${color} !important;
+            transition: color 0.3s !important;
+        }
+
+        /* Small floating indicator badge */
+        body::after {
+            content: '🔗 MAL Bridge';
+            position: fixed;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(${r}, ${g}, ${b}, 0.15);
+            border: 1px solid rgba(${r}, ${g}, ${b}, 0.4);
+            color: ${color};
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 100px;
+            z-index: 99999;
+            pointer-events: none;
+            font-family: 'Google Sans', 'Roboto', sans-serif;
+            backdrop-filter: blur(8px);
+            animation: gmb-fade-in 0.5s ease;
+        }
+
+        @keyframes gmb-fade-in {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    `;
+
+    document.head.appendChild(style);
+    console.log(`Gemini-MAL Bridge: UI highlight applied (${color})`);
+}
+
+let lastUrl = location.href;
+const urlObserver = new MutationObserver(() => {
+    if (location.href !== lastUrl) {
+        lastUrl = location.href;
+        applyUIHighlight();
+    }
+});
+urlObserver.observe(document.body, { childList: true, subtree: true });
 
 async function getStoredData() {
     if (!chrome.runtime?.id) {
@@ -144,7 +255,7 @@ ${isTurkish ?
 '- **OUTPUT LANGUAGE:** ENGLISH. Act like an English Nakama.'}
 --- END OF CONTEXT ---
 `;
-
+    
     console.log('Gemini-MAL Bridge: Injecting Shadow Prompt:\n', shadowPrompt);
 
     handleEnterLogic(target, userMessage, shadowPrompt, pendingDiff);
@@ -163,7 +274,7 @@ async function handleEnterLogic(target, userMessage, shadowPrompt, pendingDiff) 
             if (data && data.latest_fetch) {
                 chrome.storage.local.set({ 
                     last_snapshot: data.latest_fetch,
-                    last_snapshot_date: new Date().toISOString(), // Save timestamp of snapshot
+                    last_snapshot_date: new Date().toISOString(),
                     pending_changes: null
                 });
                 console.log('Gemini-MAL Bridge: Snapshot updated, queue cleared.');
@@ -231,17 +342,6 @@ function flashSuccess(target) {
     }, 1000);
 }
 
-function flashSuccess(target) {
-    const originalBorder = target.style.border;
-    target.style.transition = "box-shadow 0.3s, border-color 0.3s";
-    target.style.borderColor = "#4caf50";
-    target.style.boxShadow = "0 0 10px rgba(76, 175, 80, 0.5)";
-    setTimeout(() => {
-        target.style.borderColor = ""; 
-        target.style.boxShadow = "";
-        if (originalBorder) target.style.border = originalBorder;
-    }, 1000);
-}
 function cleanTitle(title) {
     return title.split(':')[0].split(' Season')[0].split(' Part')[0].trim();
 }

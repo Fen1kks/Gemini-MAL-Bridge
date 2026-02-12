@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const diffList = document.getElementById('diffList');
     const toggleClientIdBtn = document.getElementById('toggleClientId');
     const languageSelect = document.getElementById('languageSelect');
+    const uiColorText = document.getElementById('uiColorText');
+    const uiColorPicker = document.getElementById('uiColorPicker');
+    const uiColorClear = document.getElementById('uiColorClear');
 
     if (toggleClientIdBtn && clientIdInput) {
         toggleClientIdBtn.addEventListener('click', () => {
@@ -26,12 +29,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    const savedData = await getUserData(['mal_username', 'mal_client_id', 'target_url', 'preferred_language', 'theme', 'pending_changes', 'last_snapshot_date']);
+    if (uiColorText && uiColorPicker) {
+        uiColorPicker.addEventListener('input', () => {
+            uiColorText.value = uiColorPicker.value;
+        });
+
+        uiColorText.addEventListener('input', () => {
+            const val = uiColorText.value.trim();
+            if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                uiColorPicker.value = val;
+            }
+        });
+
+        uiColorClear.addEventListener('click', () => {
+            uiColorText.value = '';
+            uiColorPicker.value = '#4caf50';
+        });
+    }
+
+    const savedData = await getUserData(['mal_username', 'mal_client_id', 'target_url', 'preferred_language', 'theme', 'pending_changes', 'last_snapshot_date', 'target_chat_ui_color']);
     
     if (savedData.mal_username) usernameInput.value = savedData.mal_username;
     if (savedData.mal_client_id) clientIdInput.value = savedData.mal_client_id;
     if (savedData.target_url) targetUrlInput.value = savedData.target_url;
     if (savedData.preferred_language) languageSelect.value = savedData.preferred_language;
+    if (savedData.target_chat_ui_color) {
+        uiColorText.value = savedData.target_chat_ui_color;
+        if (/^#[0-9A-Fa-f]{6}$/.test(savedData.target_chat_ui_color)) {
+            uiColorPicker.value = savedData.target_chat_ui_color;
+        }
+    }
     
     updateUI(savedData);
 
@@ -46,6 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const clientId = clientIdInput.value.trim();
         const targetUrl = targetUrlInput.value.trim();
         const language = languageSelect.value;
+        const uiColor = uiColorText.value.trim();
 
         if (!username || !clientId) {
             showStatus('Please enter both Client ID and Username.', 'error');
@@ -60,7 +88,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 mal_username: username,
                 mal_client_id: clientId,
                 target_url: targetUrl,
-                preferred_language: language
+                preferred_language: language,
+                target_chat_ui_color: uiColor || null
             });
             
             const { fetchUserAnimeHistory, fetchUserFavorites, fetchUserAnimeList } = await import('../utils/api.js');

@@ -11,7 +11,7 @@
         <!-- Header -->
         <div class="header">
             <img src="../../assets/icons/icon48.png" alt="Logo">
-            <h1>Gemini & MAL Bridge</h1>
+            <h1>Gemini &amp; MAL Bridge</h1>
         </div>
 
 
@@ -50,7 +50,17 @@
                 <input type="text" id="targetUrl" placeholder="https://gemini.google.com/app/...">
             </div>
 
-            <button id="saveBtn" class="primary-btn">Save & Sync</button>
+            <!-- Target Chat URL UI Color -->
+            <div class="setting-row">
+                <label for="uiColorText">Active Chat Indicator</label>
+                <div class="color-picker-row">
+                    <input type="text" id="uiColorText" placeholder="#hex or leave empty">
+                    <input type="color" id="uiColorPicker" value="#4caf50" title="Renk Seç">
+                    <button type="button" id="uiColorClear" class="color-clear-btn" title="Temizle">✕</button>
+                </div>
+            </div>
+
+            <button id="saveBtn" class="primary-btn">Save &amp; Sync</button>
         </div>
 
         <!-- Status & Diffs -->
